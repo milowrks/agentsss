@@ -1,0 +1,10 @@
+# npm artifacts
+node_modules/
+*.tgz
+
+# macOS
+.DS_Store
+
+# pi / editor
+.pi/
+*.log
