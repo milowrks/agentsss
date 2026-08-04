@@ -4,9 +4,9 @@ A public, **agent-agnostic** collection of skills for AI coding agents — built
 
 ## Skills
 
-| Skill | Description |
-|---|---|
-| [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
+| Skill | Status | Compatibility | Description |
+|---|---|---|---|
+| [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | stable | pi, Claude Code | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
 
 Each skill is a directory with `SKILL.md` (frontmatter + instructions) and `references/` (deep-dive docs loaded on demand). No harness-specific code anywhere — pure Agent Skills spec.
 
@@ -15,14 +15,20 @@ Each skill is a directory with `SKILL.md` (frontmatter + instructions) and `refe
 ### pi
 
 ```bash
-pi install git:github.com/<github-username>/agentsss
+pi install git:github.com/milowrks/agentsss
+```
+
+Pin a specific version for stability:
+
+```bash
+pi install git:github.com/milowrks/agentsss@v1.0.0
 ```
 
 Add to project settings (`.pi/settings.json`) for a team:
 
 ```json
 {
-  "packages": ["git:github.com/<github-username>/agentsss"]
+  "packages": ["git:github.com/milowrks/agentsss"]
 }
 ```
 
@@ -31,7 +37,7 @@ Load with `/skill:write-good-rtl-tests` or let pi auto-discover it. Update with 
 ### Claude Code
 
 ```bash
-git clone git@github.com:<github-username>/agentsss.git ~/agentsss
+git clone git@github.com:milowrks/agentsss.git ~/agentsss
 ~/agentsss/install-claude.sh          # symlinks each skill into ~/.claude/skills
 ```
 
@@ -52,6 +58,10 @@ Copy or symlink the skill folder into your harness's skills directory per the [A
 
 - **pi**: `pi update --all`
 - **Claude Code**: `git pull` in the clone, then re-run `install-claude.sh` (symlinks stay valid)
+
+## Security
+
+Agent skills run with your agent's permissions and can instruct the model to perform actions on your machine. Review any skill's contents before installing, and only install from sources you trust. The scripts in this repo (`install-claude.sh`) are plain shell — read them before running.
 
 ## License
 

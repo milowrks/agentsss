@@ -2,6 +2,11 @@
 name: write-good-rtl-tests
 description: Write and review high-quality React unit tests using React Testing Library (RTL), @testing-library/jest-dom, and @testing-library/user-event. Encodes Testing Library's guiding principles, the official query-priority guide, and Kent C. Dodds' rules on implementation-detail testing and common RTL mistakes, plus React 19-era patterns for testing React Server Components (RSC) — including when to eject from RTL to end-to-end tests instead of mocking React internals. Use whenever writing, reviewing, or refactoring React component tests.
 license: MIT
+compatibility: pi, claude-code, any agent-skills-compatible harness
+metadata:
+  author: Milo Z.
+  version: "1.0.0"
+  status: stable
 ---
 
 # Write Good RTL Tests
