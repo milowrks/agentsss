@@ -1,6 +1,6 @@
 # agentsss
 
-A public collection of [pi](https://pi.dev) agent skills by [Milo Z.](https://www.npmjs.com/~milowrks) — MIT licensed.
+A public, **agent-agnostic** collection of skills for AI coding agents — built to the [Agent Skills](https://agentskills.io) standard, so they work in **pi**, **Claude Code**, and any harness that implements the spec. MIT licensed. By [Milo Z.](https://www.npmjs.com/~milowrks)
 
 ## Skills
 
@@ -8,13 +8,17 @@ A public collection of [pi](https://pi.dev) agent skills by [Milo Z.](https://ww
 |---|---|
 | [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
 
+Each skill is a directory with `SKILL.md` (frontmatter + instructions) and `references/` (deep-dive docs loaded on demand). No harness-specific code anywhere — pure Agent Skills spec.
+
 ## Installation
+
+### pi
 
 ```bash
 pi install git:github.com/<github-username>/agentsss
 ```
 
-or add it to project settings (`.pi/settings.json`) so a whole team gets it:
+Add to project settings (`.pi/settings.json`) for a team:
 
 ```json
 {
@@ -22,7 +26,32 @@ or add it to project settings (`.pi/settings.json`) so a whole team gets it:
 }
 ```
 
-Then load a skill with `/skill:<name>` or let your agent discover it automatically when the task matches. Use `pi config` to enable/disable individual skills, and `pi update --all` to pull updates.
+Load with `/skill:write-good-rtl-tests` or let pi auto-discover it. Update with `pi update --all`.
+
+### Claude Code
+
+```bash
+git clone git@github.com:<github-username>/agentsss.git ~/agentsss
+~/agentsss/install-claude.sh          # symlinks each skill into ~/.claude/skills
+```
+
+For a single project instead of personal install, symlink the skill folder into `.claude/skills/` (commit the symlink if the repo is shared):
+
+```bash
+mkdir -p .claude/skills
+ln -s ~/agentsss/skills/write-good-rtl-tests .claude/skills/write-good-rtl-tests
+```
+
+Restart Claude Code, then use `/skills` to list or let Claude auto-load it when a task matches.
+
+### Any other agent harness
+
+Copy or symlink the skill folder into your harness's skills directory per the [Agent Skills spec](https://agentskills.io) (e.g. `~/.agents/skills/`, `.agents/skills/`, `~/.claude/skills/`). The `skills/` directory in this repo contains ready-to-use skill folders.
+
+## Updating
+
+- **pi**: `pi update --all`
+- **Claude Code**: `git pull` in the clone, then re-run `install-claude.sh` (symlinks stay valid)
 
 ## License
 

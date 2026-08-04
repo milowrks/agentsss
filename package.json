@@ -1,8 +1,8 @@
 {
   "name": "agentsss",
   "version": "1.0.0",
-  "description": "Public collection of pi agent skills (MIT) by Milo Z. Currently: write-good-rtl-tests.",
-  "keywords": ["pi-package", "skill", "react", "testing", "testing-library"],
+  "description": "Agent-agnostic collection of AI agent skills (MIT) by Milo Z. Works with pi, Claude Code, and any Agent Skills-compatible harness. Skills: write-good-rtl-tests.",
+  "keywords": ["pi-package", "skill", "agent-skills", "claude-code", "react", "testing", "testing-library"],
   "license": "MIT",
   "author": "Milo Z. <hello@milo.works>",
   "pi": {
