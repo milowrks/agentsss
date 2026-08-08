@@ -2,6 +2,13 @@
 
 All notable changes to this repository's skills, grouped by release tag. Versions follow [SemVer](https://semver.org/); format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-08-08
+
+### Added
+
+- **`digest-large-pr`** — turns an oversized pull request into a reviewable plan: classifies every changed file as auxiliary or substantive (with promotion triggers for the config, fixture, migration, CI and lockfile changes that only look auxiliary), marks the auxiliary ones as viewed so they collapse out of the reviewer's file list, and posts a reading guide comment with the architecture and an ordered set of review batches. Ships two `gh`-based helpers that paginate past the 100-file limit `gh pr view --json files` and the REST files endpoint silently truncate at.
+- `requires:` frontmatter field for skills that shell out, and `scripts/` as a supported skill subdirectory alongside `references/`.
+
 ## [1.0.0] - 2026-08-04
 
 ### Added

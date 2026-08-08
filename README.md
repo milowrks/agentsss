@@ -6,9 +6,12 @@ A public, **agent-agnostic** collection of skills for AI coding agents — built
 
 | Skill | Status | Compatibility | Description |
 |---|---|---|---|
+| [`digest-large-pr`](skills/digest-large-pr/SKILL.md) | stable | pi, Claude Code | Make an oversized PR reviewable: classify every file as auxiliary or substantive, collapse the auxiliary ones out of your file list, and post a reading guide with the architecture and an ordered set of review batches. |
 | [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | stable | pi, Claude Code | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
 
-Each skill is a directory with `SKILL.md` (frontmatter + instructions) and `references/` (deep-dive docs loaded on demand). No harness-specific code anywhere — pure Agent Skills spec.
+Each skill is a directory with `SKILL.md` (frontmatter + instructions), plus `references/` (deep-dive docs loaded on demand) and/or `scripts/` (helpers the agent runs) where useful. No harness-specific code anywhere — pure Agent Skills spec.
+
+Skills that shell out declare their tools in a `requires:` frontmatter field. `digest-large-pr` needs an authenticated [`gh`](https://cli.github.com/) plus `jq`, and documents the raw GitHub GraphQL calls as a fallback for agents that cannot run shell scripts.
 
 ## Installation
 
