@@ -2,6 +2,12 @@
 
 All notable changes to this repository's skills, grouped by release tag. Versions follow [SemVer](https://semver.org/); format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.2.0] - 2026-08-10
+
+### Added
+
+- **`issue-kick-off`** — the step between "issue exists" and "agent starts building": validates the issue's context and acceptance criteria against the actual repo rather than against itself, resolves open questions by reading installed dependency source at the pinned version instead of relying on recall, classifies adjacent tracker work as blocking or merely relevant, and hands the human an architecture-level walkthrough to review the eventual build against. Uses `gh` by default, and defers to a project's spec/document CLI where one exists.
+
 ## [1.1.0] - 2026-08-08
 
 ### Added
