@@ -37,34 +37,29 @@ Add to project settings (`.pi/settings.json`) for a team:
 
 Load with `/skill:write-good-rtl-tests` or let pi auto-discover it. Update with `pi update --all`.
 
-### Claude Code
+### Any other harness
+
+`install.sh` symlinks every skill into whatever directory your harness reads, so the same command serves Claude Code, `.agents/`-style harnesses, and project-local installs:
 
 ```bash
 git clone git@github.com:milowrks/agentsss.git ~/agentsss
-~/agentsss/install-claude.sh          # symlinks each skill into ~/.claude/skills
+~/agentsss/install.sh                              # -> ~/.claude/skills (default)
+~/agentsss/install.sh --target ~/.agents/skills    # any harness's skills directory
+~/agentsss/install.sh --target .claude/skills      # project-local (commit the symlinks if the repo is shared)
 ```
 
-For a single project instead of personal install, symlink the skill folder into `.claude/skills/` (commit the symlink if the repo is shared):
+Check your harness's own docs for where it reads skills from; the [Agent Skills spec](https://agentskills.io) lists the common locations. `AGENTSSS_TARGET` works instead of `--target` if you'd rather set it once. `install-claude.sh` is kept as a wrapper for the default target so older instructions keep working.
 
-```bash
-mkdir -p .claude/skills
-ln -s ~/agentsss/skills/write-good-rtl-tests .claude/skills/write-good-rtl-tests
-```
-
-Restart Claude Code, then use `/skills` to list or let Claude auto-load it when a task matches.
-
-### Any other agent harness
-
-Copy or symlink the skill folder into your harness's skills directory per the [Agent Skills spec](https://agentskills.io) (e.g. `~/.agents/skills/`, `.agents/skills/`, `~/.claude/skills/`). The `skills/` directory in this repo contains ready-to-use skill folders.
+Symlinks mean a `git pull` in the clone updates every harness at once — no re-install needed. In Claude Code, restart and use `/skills` to list, or let it auto-load a skill when a task matches.
 
 ## Updating
 
 - **pi**: `pi update --all`
-- **Claude Code**: `git pull` in the clone, then re-run `install-claude.sh` (symlinks stay valid)
+- **Everything else**: `git pull` in the clone. Symlinks stay valid, so there is nothing to re-run unless a new skill was added — then re-run `install.sh` to link it.
 
 ## Security
 
-Agent skills run with your agent's permissions and can instruct the model to perform actions on your machine. Review any skill's contents before installing, and only install from sources you trust. The scripts in this repo (`install-claude.sh`) are plain shell — read them before running.
+Agent skills run with your agent's permissions and can instruct the model to perform actions on your machine. Review any skill's contents before installing, and only install from sources you trust. The scripts in this repo (`install.sh`, and the per-skill helpers under `skills/*/scripts/`) are plain shell — read them before running.
 
 ## License
 
