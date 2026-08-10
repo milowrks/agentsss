@@ -6,7 +6,7 @@ A public, **agent-agnostic** collection of skills for AI coding agents — built
 
 | Skill | Status | Compatibility | Description |
 |---|---|---|---|
-| [`digest-large-pr`](skills/digest-large-pr/SKILL.md) | stable | pi, Claude Code | Make an oversized PR reviewable: classify every file as auxiliary or substantive, collapse the auxiliary ones out of your file list, and post a reading guide with the architecture and an ordered set of review batches. |
+| [`digest-large-pr`](skills/digest-large-pr/SKILL.md) | stable | pi, Claude Code | Make an oversized PR reviewable: classify every file as auxiliary or substantive, collapse the auxiliary ones out of your file list, and open a pending review — inline comments on the findings, and a reading guide as the review body — for you to continue. |
 | [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | stable | pi, Claude Code | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
 
 Each skill is a directory with `SKILL.md` (frontmatter + instructions), plus `references/` (deep-dive docs loaded on demand) and/or `scripts/` (helpers the agent runs) where useful. No harness-specific code anywhere — pure Agent Skills spec.

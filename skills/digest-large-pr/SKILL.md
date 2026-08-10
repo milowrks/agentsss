@@ -1,6 +1,6 @@
 ---
 name: digest-large-pr
-description: 'Use when a pull request is too big to review front-to-back and the human needs a way in. Reads the whole PR, marks genuinely auxiliary files (configs, fixtures, lockfiles, generated output) as viewed so they collapse out of the file list, then posts a reading guide comment -- what the auxiliary files were, the architecture of the implementation, and the substantive files grouped into an ordered set of review batches. Triggers on "digest this PR", "review this large PR", "big PR", "help me review PR #N", "this PR has too many files", "give me a reading guide for this PR".'
+description: 'Use when a pull request is too big to review front-to-back and the human needs a way in. Reads the whole PR, marks genuinely auxiliary files (configs, fixtures, lockfiles, generated output) as viewed so they collapse out of the file list, then starts a review -- inline comments on what it noticed, and a reading guide as the review body covering what the auxiliary files were, the architecture of the implementation, and the substantive files grouped into an ordered set of review batches -- for the human to continue and approve. Triggers on "digest this PR", "review this large PR", "big PR", "help me review PR #N", "this PR has too many files", "give me a reading guide for this PR".'
 license: MIT
 compatibility: pi, claude-code, any agent-skills-compatible harness
 requires: gh (authenticated, repo scope), jq, POSIX shell — or any GraphQL-capable GitHub access, see "Doing this without the scripts"
@@ -18,11 +18,11 @@ SHRINK THE FILE LIST, EXPLAIN THE SHAPE, HAND OVER AN ORDERED PLAN
 
 A 60-file PR is not 60 files of review. It is usually 8 files that decide whether the change is correct and 52 that just have to be *not wrong*. This skill separates those two piles, clears the second one out of the human's way, and turns the first into a sequenced reading plan with a stated architecture behind it.
 
-The deliverable is a **reading guide**, not a verdict. Do not approve, request changes, or leave line-level critique from this skill -- the human is the reviewer and this makes them faster, it does not replace them. Flag anything alarming you happen to notice, but finding bugs is a dedicated code-review pass's job, not this one's.
+The deliverable is a **started review**, not a verdict: inline comments on what you noticed, and the reading guide as the review body, submitted as a comment for the human to continue and approve. Never approve or request changes -- the human is the reviewer and this makes them faster, it does not replace them. Flag anything alarming you happen to notice, but finding bugs is a dedicated code-review pass's job, not this one's, so an inline comment here poses a question rather than demanding a change.
 
 <HARD-GATE>
 Read every file before you mark it viewed. "Viewed" is a claim that a human's eyes are not needed on it. A glob is not evidence -- `*.json`, `fixtures/`, and `*.lock` all routinely hide load-bearing changes. If you did not read the diff, do not mark it.
-Confirm before posting. The guide comment is visible to the whole team and posts as the human. Show them the full text and get an explicit go-ahead. Marking files viewed is per-account and invisible to others, so it needs no separate confirmation once the human has invoked this skill -- that is what they asked for.
+Confirm before posting. The review is visible to the whole team and posts as the human. Show them the full body text and every inline comment, and get an explicit go-ahead. Marking files viewed is per-account and invisible to others, so it needs no separate confirmation once the human has invoked this skill -- that is what they asked for.
 Disclose authorship. Anything posted while authenticated as the human must state that an AI assistant generated it and the human reviewed it -- name yourself as that assistant, whichever one you are. Check the repo's agent-instruction file -- `AGENTS.md`, `CLAUDE.md`, or whatever the equivalent is -- in case it mandates specific wording, and follow that instead. Put the disclosure in the same text you pass to `--body`; never post via `--body-file`, since any pre-post check that inspects the command text cannot see inside a file argument, and will either block the call or wave through an undisclosed comment.
 </HARD-GATE>
 
@@ -107,7 +107,7 @@ Two properties to state plainly whenever you report this:
 
 Before ordering anything, understand the change well enough to describe it in a short paragraph: what enters the system, what transforms it, what comes out, and where this PR intervenes in that path. Trace the real call chain across the substantive files, and name the mechanism -- not "adds a service" but "puts a write-through cache between the resolver and the repository, so invalidation now has to happen on the mutation path."
 
-Include the parts of the flow the PR *doesn't* touch when they are needed to make sense of the parts it does. Cite files so the human can verify rather than trust you.
+Include the parts of the flow the PR *doesn't* touch when they are needed to make sense of the parts it does. Trace it through the real files so what you write is verifiable rather than plausible -- but keep the paths out of the written summary and let the batch list and the inline comments carry them.
 
 If the PR does more than one thing, say so -- "this is two changes sharing a branch" is genuinely useful and often the most actionable thing in the guide.
 
@@ -129,9 +129,15 @@ Sizing and framing:
 - Give each batch a **question to hold in mind** ("does every path that writes to this table also invalidate the cache?"). This is what makes a reading plan better than a file list.
 - Name the **keystone file**: if the human reads exactly one file, which one, and what to look for. State the single highest-risk change in the PR.
 
-## 6. Post the guide
+## 6. Post the guide as the opening of a review
 
-Show the human the full comment text, get the go-ahead, then build the body in a variable and pass it inline. A reading guide is long and full of backticks and newlines, so quote it through a heredoc rather than trying to escape it into one argument -- the text still travels in the command, where pre-post checks can see the disclosure:
+Post **one pending review**, not a detached comment: file-specific findings ride as inline comments on the lines they concern, and the guide is the review body. Submit it with `event: "COMMENT"` so it registers as a review already in progress that the human continues and approves -- never `APPROVE` or `REQUEST_CHANGES`, which are the human's to give.
+
+This is also what keeps the guide short. Anything that needs a file path and a line to make sense belongs inline, where the reader sees it beside the code. The body carries only what a file-level comment cannot: the architecture, the batch order, the keystone, the marked-viewed summary.
+
+Anchor every inline comment against the head SHA, and get its line numbers by reading the file at the head ref rather than counting diff hunks by hand -- an off-by-two lands the comment on the wrong field. A multi-line block takes `start_line`/`line` with `side: "RIGHT"`.
+
+Show the human the full text of the body and of every inline comment, get the go-ahead, then build them in variables and assemble the payload with `jq`, piping to `--input -`. Heredocs keep backticks and newlines intact, and the text still travels in the command where pre-post checks can see the disclosure -- which is why the payload must never come from a file on disk:
 
 ```bash
 body=$(cat <<'EOF'
@@ -139,10 +145,19 @@ body=$(cat <<'EOF'
 ...full text, including the disclosure line...
 EOF
 )
-gh pr comment <n> --repo <owner>/<name> --body "$body"
+inline=$(cat <<'EOF'
+...finding, including its own disclosure line...
+EOF
+)
+jq -n --arg commit "<head-sha>" --arg body "$body" --arg ibody "$inline" \
+  '{commit_id:$commit, body:$body, event:"COMMENT", comments:[
+     {path:"<path>", start_line:<n>, start_side:"RIGHT", line:<m>, side:"RIGHT", body:$ibody}]}' \
+  | gh api repos/<owner>/<name>/pulls/<n>/reviews --input -
 ```
 
-Template -- keep it tight; a reading guide that needs its own reading guide has failed:
+Then confirm each comment anchored where you meant it, by reading back `path`, `start_line` and `line` from `pulls/<n>/comments`.
+
+Template for the review body:
 
 ```md
 ## Reading guide 🗺️
@@ -150,7 +165,7 @@ Template -- keep it tight; a reading guide that needs its own reading guide has 
 **<N> files, +X/−Y.** <One sentence on what the PR does.>
 
 ### Architecture
-<Short paragraph: the flow end to end and where this PR intervenes. Cite files.>
+<Short paragraph, plain English: what the change does, what mechanism carries it, what is in and out of scope. No file paths and no module-by-module breakdown -- that detail goes in the inline comments. Say plainly if the PR does more than one thing.>
 
 ### Suggested review order
 
@@ -170,6 +185,8 @@ Collapsed on my own file list to shrink the diff — <one-line-per-group summary
 ---
 *This reading guide was generated by <name yourself -- e.g. Claude> and reviewed/edited by me before posting.*
 ```
+
+Keep it tight, in plain English, and let the inline comments carry the specifics. A reading guide that needs its own reading guide has failed. Every inline comment carries its own disclosure line too -- each one is a separate posted artifact.
 
 ## Doing this without the scripts
 
@@ -200,4 +217,4 @@ A path that is not part of the PR fails with `Filepath must be part of pull requ
 
 ## Output shape
 
-Reply in chat with: the auxiliary/substantive split and how the marking went (including any failures), the architecture summary, the batch plan with the keystone file, and anything that got promoted out of the auxiliary pile or looked out of scope. Then present the comment text and wait for confirmation before posting.
+Reply in chat with: the auxiliary/substantive split and how the marking went (including any failures), the architecture summary, the batch plan with the keystone file, and anything that got promoted out of the auxiliary pile or looked out of scope. Then present the review body and every inline comment, and wait for confirmation before posting.
