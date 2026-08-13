@@ -8,11 +8,12 @@ A public, **agent-agnostic** collection of skills for AI coding agents — built
 |---|---|---|---|
 | [`digest-large-pr`](skills/digest-large-pr/SKILL.md) | stable | pi, Claude Code | Make an oversized PR reviewable: classify every file as auxiliary or substantive, collapse the auxiliary ones out of your file list, and open a pending review — inline comments on the findings, and a reading guide as the review body — for you to continue. |
 | [`issue-kick-off`](skills/issue-kick-off/SKILL.md) | stable | pi, Claude Code | Check a GitHub issue is actually ready to build before an agent starts: validate the acceptance criteria against the real code, resolve open questions from installed source rather than recall, classify adjacent work as blocking or not, and equip the human to review the build. |
+| [`write-github-issue`](skills/write-github-issue/SKILL.md) | stable | pi, Claude Code | Write or review an issue body an agent can build from: specify observable behaviour at an altitude a reviewer can check, without restating the product tracker above it or pre-empting the implementation below it. Ships adaptable per-type document templates for projects that front their tracker with a spec CLI. |
 | [`write-good-rtl-tests`](skills/write-good-rtl-tests/SKILL.md) | stable | pi, Claude Code | Write and review high-quality React unit tests with React Testing Library, including React 19-era patterns for React Server Components (RSC) and when to eject to E2E. |
 
 Each skill is a directory with `SKILL.md` (frontmatter + instructions), plus `references/` (deep-dive docs loaded on demand) and/or `scripts/` (helpers the agent runs) where useful. No harness-specific code anywhere — pure Agent Skills spec.
 
-Skills that shell out declare their tools in a `requires:` frontmatter field. `digest-large-pr` needs an authenticated [`gh`](https://cli.github.com/) plus `jq`, and documents the raw GitHub GraphQL calls as a fallback for agents that cannot run shell scripts. `issue-kick-off` needs `gh`, and works with any tracker workflow — if your project fronts its issues with a spec/document CLI, the skill defers to that tool instead.
+Skills that shell out declare their tools in a `requires:` frontmatter field. `digest-large-pr` needs an authenticated [`gh`](https://cli.github.com/) plus `jq`, and documents the raw GitHub GraphQL calls as a fallback for agents that cannot run shell scripts. `issue-kick-off` needs `gh`, and works with any tracker workflow — if your project fronts its issues with a spec/document CLI, the skill defers to that tool instead. `write-github-issue` does the same, and pairs with it: one writes the issue, the other checks it is ready to build.
 
 ## Installation
 
