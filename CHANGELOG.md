@@ -2,6 +2,13 @@
 
 All notable changes to this repository's skills, grouped by release tag. Versions follow [SemVer](https://semver.org/); format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.3.0] - 2026-08-13
+
+### Added
+
+- **`write-github-issue`** — the writing half of the issue workflow, pairing with `issue-kick-off`'s validation half. Built on an altitude test rather than a template: for any sentence, ask which document would have to change if it became false, and put it there. Encodes what that subtracts — no restatement of the product artefact above the issue, no file or API detail, no delivery narrative, no non-functional section (a slice-specific requirement is an acceptance-criteria row, a standing obligation is a principle to link), and no cross-reference table, since the tracker's own dependency edges and a document CLI's typed relations already carry them. Covers story, bug and spike shapes, and defers to a project's per-type templates and authorship ceilings where a spec CLI defines them.
+- `write-github-issue/references/document-templates.md` — adaptable story, bug and spike templates in the intent-plus-guidance style a spec/document CLI reads, so a project's own shape lives in version control and the skill stays the judgement layer on top.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added
