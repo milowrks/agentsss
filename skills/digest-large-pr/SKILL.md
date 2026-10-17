@@ -6,10 +6,9 @@ compatibility: pi, claude-code, any agent-skills-compatible harness
 requires: gh (authenticated, repo scope), jq, POSIX shell — or any GraphQL-capable GitHub access, see "Doing this without the scripts"
 metadata:
   author: Milo Z.
-  version: "1.0.0"
+  version: "1.1.0"
   status: stable
 ---
-
 # Digest Large PR
 
 ```
@@ -23,7 +22,7 @@ The deliverable is a **started review**, not a verdict: inline comments on what 
 <HARD-GATE>
 Read every file before you mark it viewed. "Viewed" is a claim that a human's eyes are not needed on it. A glob is not evidence -- `*.json`, `fixtures/`, and `*.lock` all routinely hide load-bearing changes. If you did not read the diff, do not mark it.
 Confirm before posting. The review is visible to the whole team and posts as the human. Show them the full body text and every inline comment, and get an explicit go-ahead. Marking files viewed is per-account and invisible to others, so it needs no separate confirmation once the human has invoked this skill -- that is what they asked for.
-Disclose authorship. Anything posted while authenticated as the human must state that an AI assistant generated it and the human reviewed it -- name yourself as that assistant, whichever one you are. Check the repo's agent-instruction file -- `AGENTS.md`, `CLAUDE.md`, or whatever the equivalent is -- in case it mandates specific wording, and follow that instead. Put the disclosure in the same text you pass to `--body`; never post via `--body-file`, since any pre-post check that inspects the command text cannot see inside a file argument, and will either block the call or wave through an undisclosed comment.
+Disclose authorship. Anything posted while authenticated as the human must say that an AI assistant generated it -- name yourself as that assistant, whichever one you are. Use the exact format from the user's own agent instructions (for Claude Code, `~/.claude/CLAUDE.md`) or the repo's `AGENTS.md`/`CLAUDE.md`; the format can differ between the review body and inline comments.
 </HARD-GATE>
 
 <NEVER>
@@ -31,6 +30,7 @@ Disclose authorship. Anything posted while authenticated as the human must state
 - Do NOT classify from the file table alone. `additions/deletions` and a path tell you nothing about whether a config change flips a production default.
 - Do NOT let the batch plan be an alphabetical or directory-order relabelling of the file list. If the order carries no argument about what depends on what, it is not worth posting.
 - Do NOT rewrite, fix, or push to the branch. This skill reads and reports.
+- Do NOT repeat anything the PR page already shows -- the changed-file count, the `+X/-Y` diffstat, branch names, or a restatement of the PR description or linked issue. GitHub renders all of it inches above your review. Every duplicated line is reading overhead the human has to skip before reaching what only you can tell them, which is the exact cost this skill exists to remove.
 </NEVER>
 
 ## 0. Check you can actually finish
@@ -40,12 +40,9 @@ This skill needs the GitHub CLI authenticated against the host (`gh auth status`
 The helper scripts live in `scripts/` **inside this skill's own directory**, not the repo under review. Different agents install skills in different places, so resolve that directory once and prefix every invocation with it -- your working directory will be the project:
 
 ```bash
-SKILL_DIR=$(find ~/.claude/skills ./.claude/skills ~/.agents/skills ./.agents/skills \
-  ~/agentsss/skills /mnt/skills \
+SKILL_DIR=$(find ~/.claude/skills ~/.config/claude/skills ./.claude/skills ./.agent/skills /mnt/skills \
   -maxdepth 4 -type d -name digest-large-pr -print -quit 2>/dev/null)
 ```
-
-Add your own harness's skills root to that list if it is not there.
 
 If your runtime already tells you where the loaded skill lives, use that instead, and if the search comes back empty, ask the human where the skill is installed rather than running the scripts from a guessed path. If you cannot run shell scripts at all -- no shell, a non-POSIX one, or GitHub reachable only through an API client -- do not abandon the skill: the two GitHub operations it wraps are in **Doing this without the scripts** at the end, and every other step is reading and judgement.
 
@@ -74,6 +71,7 @@ Usual auxiliary candidates -- candidates, not verdicts:
 - Tool config: linter, formatter, editor, tsconfig, build config
 - Docs, changelogs, comments, static assets
 - Mechanical churn: pure renames, import reordering, formatter-only reflows
+- Behaviour-preserving refactors: extract-to-const, a function split with the same call graph, a type-only export added for a consumer elsewhere in the same PR. Source code is not automatically substantive -- put it through the same "would a reviewer learn anything" test as everything else, and when the answer is no, mark it viewed.
 
 Before you accept any of those as auxiliary, check it against the **promotion triggers** below. Any hit makes the file substantive, and it goes in a batch with the reason called out:
 
@@ -103,13 +101,15 @@ Two properties to state plainly whenever you report this:
 - **Viewed state is per-account.** It collapses the file in *the token holder's* view only. Teammates see an unchanged PR.
 - **A new push clears it** for every file that changed in that push. After a force-push or new commits, re-run the skill rather than assuming the marks held.
 
-## 4. Work out the architecture
+## 4. Work out the architecture, then draw it
 
-Before ordering anything, understand the change well enough to describe it in a short paragraph: what enters the system, what transforms it, what comes out, and where this PR intervenes in that path. Trace the real call chain across the substantive files, and name the mechanism -- not "adds a service" but "puts a write-through cache between the resolver and the repository, so invalidation now has to happen on the mutation path."
+Before ordering anything, understand the change well enough to trace it: what enters the system, what transforms it, what comes out, and where this PR intervenes in that path. Follow the real call chain across the substantive files, and name the mechanism -- not "adds a service" but "puts a write-through cache between the resolver and the repository, so invalidation now has to happen on the mutation path."
 
-Include the parts of the flow the PR *doesn't* touch when they are needed to make sense of the parts it does. Trace it through the real files so what you write is verifiable rather than plausible -- but keep the paths out of the written summary and let the batch list and the inline comments carry them.
+**Deliver that understanding as a diagram, not as prose.** A paragraph of architectural description is the easiest place for this skill to defeat its own purpose: the reader parses dense sentences to rebuild a shape you already had, which is reading overhead, not reading saved. GitHub renders mermaid natively in a review body, so a fenced `mermaid` block needs no image and no library. Draw the flow the change lives in -- the inputs, the branch points, the pieces that come out and their order -- and include the parts the PR *doesn't* touch where they are needed to make the touched parts make sense.
 
-If the PR does more than one thing, say so -- "this is two changes sharing a branch" is genuinely useful and often the most actionable thing in the guide.
+Then add at most three or four short bullets for what a diagram cannot hold: a deliberate coupling between two pieces, a behaviour that flipped from pull to push, anything in the PR that outlives the feature it was written for. If the PR does more than one thing, say so here -- "this is two changes sharing a branch" is genuinely useful and often the most actionable thing in the guide.
+
+Keep file paths out of both the diagram and the bullets; the batch list and the inline comments carry them. Trace it through the real files so what you draw is verifiable rather than plausible. You cannot preview the render before posting, so keep the mermaid conservative -- plain-text node labels and `<br>` only, no `<b>` or `<i>` -- and tell the human to check it rendered.
 
 ## 5. Build the review batches
 
@@ -129,24 +129,38 @@ Sizing and framing:
 - Give each batch a **question to hold in mind** ("does every path that writes to this table also invalidate the cache?"). This is what makes a reading plan better than a file list.
 - Name the **keystone file**: if the human reads exactly one file, which one, and what to look for. State the single highest-risk change in the PR.
 
+### Land the order as numbered comments, not a list of paths
+
+Do not spell a batch's files out in the review body. A path written in prose is a string the human has to go and find; a comment anchored on the file is a link that takes them straight there, and GitHub already draws the file tree beside it. So each batch becomes one inline comment, anchored at the top of the file that batch opens with:
+
+> **2. Review the page assembly**
+>
+> Why this batch sits here, and the question to hold in mind. Name the batch's other files by basename only, if it has any.
+
+Number them in the comment text -- `**1. ...**`, `**2. ...**` -- and never rely on position to carry the sequence. A review's comments are shown against their files in diff order, not in the order you posted them, so the number in the text is the only thing that survives.
+
+The keystone and the highest-risk change are locations too, so they are comments as well. Where either falls in a file that already opens a batch, fold the key or warning line into that batch's comment rather than posting a second one on the same lines.
+
+The body is then a numbered list of batch names and nothing else -- something the human scans in one glance before following the comments down into the diff.
+
 ## 6. Post the guide as the opening of a review
 
-Post **one pending review**, not a detached comment: file-specific findings ride as inline comments on the lines they concern, and the guide is the review body. Submit it with `event: "COMMENT"` so it registers as a review already in progress that the human continues and approves -- never `APPROVE` or `REQUEST_CHANGES`, which are the human's to give.
+Post **one pending review**, not a detached comment. Its inline comments do two jobs: the numbered batch markers from step 5, and the findings you noticed, each on the lines it concerns. The guide is the review body. Submit it with `event: "COMMENT"` so it registers as a review already in progress that the human continues and approves -- never `APPROVE` or `REQUEST_CHANGES`, which are the human's to give.
 
-This is also what keeps the guide short. Anything that needs a file path and a line to make sense belongs inline, where the reader sees it beside the code. The body carries only what a file-level comment cannot: the architecture, the batch order, the keystone, the marked-viewed summary.
+This is also what keeps the guide short. Anything that needs a file path and a line to make sense belongs inline, where the reader sees it beside the code. The body carries only what a file-level comment cannot: the architecture, the batch names in order, and the marked-viewed summary. Paths, the keystone and the highest-risk change all have a location, so all three are comments.
 
 Anchor every inline comment against the head SHA, and get its line numbers by reading the file at the head ref rather than counting diff hunks by hand -- an off-by-two lands the comment on the wrong field. A multi-line block takes `start_line`/`line` with `side: "RIGHT"`.
 
-Show the human the full text of the body and of every inline comment, get the go-ahead, then build them in variables and assemble the payload with `jq`, piping to `--input -`. Heredocs keep backticks and newlines intact, and the text still travels in the command where pre-post checks can see the disclosure -- which is why the payload must never come from a file on disk:
+Show the human the full text of the body and of every inline comment, get the go-ahead, then build them in variables and assemble the payload with `jq`, piping to `--input -`. Heredocs keep backticks and newlines intact:
 
 ```bash
 body=$(cat <<'EOF'
 ## Reading guide 🗺️
-...full text, including the disclosure line...
+...full text, with its attribution...
 EOF
 )
 inline=$(cat <<'EOF'
-...finding, including its own disclosure line...
+...finding, with its own attribution...
 EOF
 )
 jq -n --arg commit "<head-sha>" --arg body "$body" --arg ibody "$inline" \
@@ -162,31 +176,33 @@ Template for the review body:
 ```md
 ## Reading guide 🗺️
 
-**<N> files, +X/−Y.** <One sentence on what the PR does.>
+<One line of orientation the PR page does not already give -- the prior PR this builds on, the constraint that shaped it. Cut the line entirely rather than restate the PR description, and never open with a file count or diffstat.>
 
-### Architecture
-<Short paragraph, plain English: what the change does, what mechanism carries it, what is in and out of scope. No file paths and no module-by-module breakdown -- that detail goes in the inline comments. Say plainly if the PR does more than one thing.>
+### How it works
+<A mermaid fence: the flow the change lives in. Inputs, branch points, what comes out and in what order.>
+
+<Up to four short bullets for what the diagram cannot hold -- a deliberate coupling, a behaviour that flipped, anything here that outlives the feature. Plain English, no file paths. Say plainly if the PR does more than one thing.>
 
 ### Suggested review order
 
-**1. <Batch name>** — `file-a`, `file-b`
-<Why these first. What question to hold in mind.>
+1. **<Batch name>** — <one clause on what this batch settles>
+2. **<Batch name>** — <...>
 
-**2. <Batch name>** — `file-c`, `file-d`
-<...>
-
-🔑 **Keystone:** `path/to/file` — <what to look hardest at, and why it carries the most risk.>
+<No paths here. Each numbered comment on the diff opens its batch and carries the detail; 🔑 marks the keystone and ⚠️ the highest-risk change.>
 
 ### Marked as viewed (<M> files)
 Collapsed on my own file list to shrink the diff — <one-line-per-group summary, e.g. "12 snapshot files regenerated by the schema change; `pnpm-lock.yaml` for the single stated dep bump; 4 CI configs, no permission or trigger changes">.
 
 <Note any file that looked auxiliary but was promoted, and why.>
-
----
-*This reading guide was generated by <name yourself -- e.g. Claude> and reviewed/edited by me before posting.*
 ```
 
-Keep it tight, in plain English, and let the inline comments carry the specifics. A reading guide that needs its own reading guide has failed. Every inline comment carries its own disclosure line too -- each one is a separate posted artifact.
+Attribute the body in the format the user's instructions give for a review summary.
+
+Keep it tight, in plain English, and let the inline comments carry the specifics. A reading guide that needs its own reading guide has failed.
+
+Plain English is a requirement here, not a preference. Short sentences, ordinary words, one idea per sentence, no stacked subordinate clauses -- dense prose costs the reader exactly what the collapsed file list saved them. Before posting, reread the body as the reviewer and cut two things: any line that only restates the PR page, and any sentence you had to read twice.
+
+Every inline comment carries its own attribution too, in the format the user's instructions give for inline comments -- each one is a separate posted artifact.
 
 ## Doing this without the scripts
 
@@ -217,4 +233,4 @@ A path that is not part of the PR fails with `Filepath must be part of pull requ
 
 ## Output shape
 
-Reply in chat with: the auxiliary/substantive split and how the marking went (including any failures), the architecture summary, the batch plan with the keystone file, and anything that got promoted out of the auxiliary pile or looked out of scope. Then present the review body and every inline comment, and wait for confirmation before posting.
+Reply in chat with: the auxiliary/substantive split and how the marking went (including any failures), the architecture diagram, the batch plan with the keystone file, and anything that got promoted out of the auxiliary pile or looked out of scope. Then present the review body and every inline comment, and wait for confirmation before posting.
