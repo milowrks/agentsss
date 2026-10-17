@@ -1,7 +1,7 @@
 {
   "name": "agentsss",
   "version": "1.3.0",
-  "description": "Agent-agnostic collection of AI agent skills (MIT) by Milo Z. Works with pi, Claude Code, and any Agent Skills-compatible harness. Skills: agent-setup-review, clean-sweep-uninstall, digest-large-pr, issue-kick-off, pr-description, write-good-rtl-tests.",
+  "description": "Agent-agnostic collection of AI agent skills (MIT) by Milo Z. Works with pi, Claude Code, and any Agent Skills-compatible harness. Skills: agent-setup-review, clean-sweep-uninstall, digest-large-pr, issue-house-style, issue-kick-off, pr-description, write-good-rtl-tests.",
   "keywords": ["pi-package", "skill", "agent-skills", "claude-code", "react", "testing", "testing-library", "code-review", "pull-request", "github", "issue-triage", "planning"],
   "license": "MIT",
   "author": "Milo Z. <hello@milo.works>",

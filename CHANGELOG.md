@@ -8,6 +8,7 @@ All notable changes to this repository's skills, grouped by release tag. Version
 
 - **`agent-setup-review`** — audits your own Claude Code setup and walks through fixes one approved step at a time: hooks whose matchers name tools that no longer exist, memories saved in a folder where they never load, rules contradicted by skills, plugins lagging the CLI they drive, and leftovers. Ships a read-only `inventory.sh`, and a read-only mode for a scheduled check.
 - **`clean-sweep-uninstall`** — removes a macOS app and every leftover it scatters across the system.
+- **`issue-house-style`** — the judgement layer for writing and reviewing issue bodies: which document a sentence belongs to, four exclusions, section-by-section rules, voice, length and a review checklist.
 - **`pr-description`** — writes a PR description in a fixed four-section template, grounded in the diff and shown for approval before posting.
 
 ### Changed
