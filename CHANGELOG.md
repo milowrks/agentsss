@@ -2,6 +2,20 @@
 
 All notable changes to this repository's skills, grouped by release tag. Versions follow [SemVer](https://semver.org/); format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.3.0] - 2026-10-17
+
+### Added
+
+- **`agent-setup-review`** — audits your own Claude Code setup and walks through fixes one approved step at a time: hooks whose matchers name tools that no longer exist, memories saved in a folder where they never load, rules contradicted by skills, plugins lagging the CLI they drive, and leftovers. Ships a read-only `inventory.sh`, and a read-only mode for a scheduled check.
+- **`clean-sweep-uninstall`** — removes a macOS app and every leftover it scatters across the system.
+- **`issue-house-style`** — the judgement layer for writing and reviewing issue bodies: which document a sentence belongs to, four exclusions, section-by-section rules, voice, length and a review checklist.
+- **`pr-description`** — writes a PR description in a fixed four-section template, grounded in the diff and shown for approval before posting.
+
+### Changed
+
+- **`digest-large-pr`** 1.1.0 — attribution follows the user's own agent instructions instead of a fixed footer, the workaround for a pre-post hook is gone, and the review body never repeats what the PR page already shows.
+- **`issue-kick-off`** 1.1.0 — attribution follows the user's own agent instructions, document-tool writes are ordered so a stale local cache can't overwrite the remote (with `lazyspec fetch` in the worked example), the body edit that follows a resolving comment needs approval like any other write, and the triggers no longer compete with a project's own entry-point skill.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added

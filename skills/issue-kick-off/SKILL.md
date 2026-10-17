@@ -1,12 +1,12 @@
 ---
 name: issue-kick-off
-description: 'Use when picking up a GitHub issue (story, bug, spike) before an agent starts building it -- validates the issue is build-ready, resolves any open questions with concrete code/framework evidence, checks for relevant or blocking related issues, and equips the human implementer to review the eventual agent implementation. Triggers on "kick off issue", "investigate this issue", "is this issue ready to build", "help me understand this ticket before we build it", "read issue #N and check it''s ready".'
+description: 'Use when picking up a GitHub issue (story, bug, spike) before an agent starts building it -- validates the issue is build-ready, resolves any open questions with concrete code/framework evidence, checks for relevant or blocking related issues, and equips the human implementer to review the eventual agent implementation. Triggers on "kick off issue", "is this issue ready to build", "help me understand this ticket before we build it", "read issue #N and check it''s ready". Use before a build starts; if the project has its own entry-point skill for working an issue, that stays the entry point.'
 license: MIT
 compatibility: pi, claude-code, any agent-skills-compatible harness
 requires: gh (authenticated, repo scope) — optionally a spec/document CLI such as lazyspec, see "If your project has a document tool"
 metadata:
   author: Milo Z.
-  version: "1.0.0"
+  version: "1.1.0"
   status: stable
 ---
 
@@ -28,8 +28,8 @@ Ground claims in code, not memory. Any claim about how a framework, adapter, or 
 
 <NEVER>
 - Do NOT hand-edit files that a document/spec CLI manages. Such tools own their frontmatter and relation graph, so go through their own update/link commands -- see **If your project has a document tool** below. This holds even though the file looks like ordinary Markdown on disk.
-- Do NOT post a comment or body edit via `--body-file` when the account posting is the human's own and an authorship disclosure is required. Any pre-post check that inspects the command text cannot see inside a file argument, so it will either block the call or wave through an undisclosed comment. Inline the full text into `--body` with the disclosure in that same text (e.g. `*Comment drafted by <name yourself>, reviewed and posted by @<user>.*`), and check the repo's agent-instruction file -- `AGENTS.md`, `CLAUDE.md`, or the equivalent -- in case it mandates specific wording.
-- Do NOT let a resolved answer live only in a comment while the issue body still frames it as open. If a comment resolves something the body calls out as unresolved (a spike, a "TBD", an "open at kickoff" note), also edit the body to a short pointer ("Resolved -- see comment below") so the body and the comment thread never disagree about current state.
+- Do NOT post a comment as the human without the authorship disclosure their agent instructions require. Use the exact format from the user's own instruction file (for Claude Code, `~/.claude/CLAUDE.md`) or the repo's `AGENTS.md`/`CLAUDE.md`; if neither specifies one, name yourself as the assistant that generated it.
+- Do NOT let a resolved answer live only in a comment while the issue body still frames it as open. If a comment resolves something the body calls out as unresolved (a spike, a "TBD", an "open at kickoff" note), also edit the body to a short pointer ("Resolved -- see comment below") so the body and the comment thread never disagree about current state. That body edit needs the human's go-ahead like any other write.
 </NEVER>
 
 ## 1. Read the issue
@@ -61,7 +61,7 @@ When an issue defers a question ("open at kickoff," "TBD," "needs a spike"), try
 1. Identify exactly which code path the question depends on.
 2. Read the *installed* source for anything framework/library/adapter-related, at the version this project actually pins -- `node_modules/<package>/`, `vendor/`, the virtualenv's `site-packages/`, `~/.cargo/registry/`, whatever your ecosystem uses -- rather than relying on trained knowledge of that library, which may be stale or wrong for the pinned version. Trace the real call chain (e.g. config option -> core renderer -> adapter transform -> platform output) and cite exact files/functions.
 3. If the answer is genuinely undecidable from code (a product decision, an unverifiable-until-deployed behavior), say so plainly instead of forcing a resolution -- don't manufacture false confidence.
-4. Once resolved, post the evidence as a comment (see step 6 for the disclosure/inlining rule) and edit the body's mention of the open question down to a short "resolved, see comment" pointer -- never leave both saying different things.
+4. Once resolved, post the evidence as a comment (see step 6) and edit the body's mention of the open question down to a short "resolved, see comment" pointer -- never leave both saying different things.
 
 ## 4. Build the architecture-level picture
 
@@ -86,8 +86,8 @@ Search the tracker for anything touching the same files, behavior, or area:
 
 Everything here is a real mutation -- confirm scope with the human first unless they've already named the exact action:
 
-- **Body edits**: `gh issue edit <number> --repo <owner>/<name> --body "<full new body>"` for AC tightening, resolving stale open-question framing, or adding a missing test-plan step. Note this replaces the body wholesale, so build the new text from the version you just read rather than from memory.
-- **Comments**: `gh issue comment <number> --repo <owner>/<name> --body "<inline text>"` with the text passed inline, not `--body-file`, and the authorship disclosure in that same text whenever the account posting is the human's own. Use comments for evidence, discussion, and rationale (framework findings, why an adjacent issue is or isn't blocking); use body edits for anything that is actually part of the spec (ACs, Goal, Context).
+- **Body edits**: `gh issue edit <number> --repo <owner>/<name> --body-file <file>` for AC tightening, resolving stale open-question framing, or adding a missing test-plan step. Note this replaces the body wholesale, so build the new text from the version you just read rather than from memory.
+- **Comments**: `gh issue comment <number> --repo <owner>/<name> --body-file <file>`, with the authorship disclosure from the NEVER list whenever the account posting is the human's own. Use comments for evidence, discussion, and rationale (framework findings, why an adjacent issue is or isn't blocking); use body edits for anything that is actually part of the spec (ACs, Goal, Context).
 - **Relations**: however your tracker models them -- a link in the body, a GitHub sub-issue/tracking list, or a document tool's link command.
 
 If the project has a document tool that owns the issue, use its commands for all three instead -- see below.
@@ -104,10 +104,12 @@ Two rules hold for any such tool:
 
 - **Never hand-edit the managed file**, even though it looks like ordinary Markdown. The tool owns frontmatter and the relation graph, and a hand edit desynchronises them.
 - **Pass prose only when updating a body.** These tools separate body from frontmatter and re-serialize the frontmatter themselves; including the frontmatter block in the new body duplicates it.
+- **Order writes so a stale local copy can't overwrite the remote.** Tools that cache documents locally can push that cache back over newer remote prose. Refresh first, edit the body before adding relations, then link, then refresh again before any later update.
 
 Worked example, lazyspec:
 
 ```bash
+lazyspec fetch --type <type>     # refresh the local cache before any write, and again after linking
 lazyspec show <id> --json        # body, comments, related, status, assignee as separate fields
 lazyspec context <id> --json     # the parent/related chain, not just the leaf document
 lazyspec search "<topic>" --json # step 5's adjacent-work sweep
