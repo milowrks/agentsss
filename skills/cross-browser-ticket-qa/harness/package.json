@@ -1,0 +1,7 @@
+{
+  "name": "ticket-qa-harness",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  }
+}

@@ -2,6 +2,14 @@
 
 All notable changes to this repository's skills, grouped by release tag. Versions follow [SemVer](https://semver.org/); format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- **`cross-browser-ticket-qa`** (beta) — reads a ticket, drafts a numbered test plan for approval and saves it, then runs it as one Playwright script in Chromium, WebKit and Firefox. CMS steps run once in a window the human signs into by hand; the session moves to a hidden browser in memory and ends with the run. Each step's screenshot frames the whole component or screen, with the region that proves the result outlined green on pass and red on fail. Plans and results go in `Tests/<date>-<ticket>-<description>/Plans` and `Results` in the Obsidian vault.
+- **`browser-qa-verification`** — verifies a change in a real browser against a deployment or a local app, with a script that mints and revokes a temporary Vercel Deployment Protection bypass secret.
+- **`evidence-test-plan`** — posts a finished run's evidence to its GitHub issue or ClickUp task, uploading the screenshots itself, after the human approves the comment.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added
