@@ -18,7 +18,7 @@ run (`.qa/debug/*.aria.yml`) or the MCP browser.
 
 ## Block writes to anything but the expected dataset
 
-Confirm the dataset from the requests, as `browser-qa-verification` says. Also
+Confirm the dataset from the requests, as `references/environments.md` says. Also
 make the script refuse writes elsewhere, so a misconfigured Studio can't touch
 production. Register this straight after `qa.signIn` returns:
 

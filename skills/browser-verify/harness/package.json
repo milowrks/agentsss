@@ -1,5 +1,5 @@
 {
-  "name": "ticket-qa-harness",
+  "name": "browser-verify-harness",
   "private": true,
   "devDependencies": {
     "@playwright/test": "1.64.0"

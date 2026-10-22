@@ -13,7 +13,7 @@ ticket=${1:?usage: setup.sh "<ticket folder>"}
 skill_dir=$(cd "$(dirname "$0")/.." && pwd)
 harness="$skill_dir/harness"
 version=$(node -p "require('$harness/package.json').devDependencies['@playwright/test']")
-shared="${XDG_CACHE_HOME:-$HOME/.cache}/ticket-qa/$version"
+shared="${XDG_CACHE_HOME:-$HOME/.cache}/browser-verify/$version"
 
 if [ ! -d "$shared/node_modules/@playwright/test" ]; then
   mkdir -p "$shared"

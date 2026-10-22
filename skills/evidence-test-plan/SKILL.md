@@ -22,7 +22,7 @@ metadata:
 Turn a finished test plan run into a comment where every plan item is a heading,
 and every artefact sits under a statement of why it passes that item.
 
-Running the tests is `browser-qa-verification`. This skill publishes the result,
+Running the tests is `browser-verify`. This skill publishes the result,
 and inherits that skill's principle that **the test plan is the spine of the
 report, not the acceptance criteria** — quote the plan, don't restate ACs.
 
@@ -38,15 +38,16 @@ to destroy first — a comment may have picked up attachments or replies since.
 ## 1. Gather
 
 - **The plan, verbatim.** GitHub: `gh issue view <n> --json body`. ClickUp: the
-  task description or the test-plan comment. Copy the wording exactly; never
-  paraphrase it.
-- **The execution note and evidence**: the dated `<YYYY-MM-DD ticket title>/`
-  folder in the user's notes (ask once where), with attachments in its
-  `evidence/` subfolder. A run from `cross-browser-ticket-qa` lives instead in
-  `Tests/<YYYY-MM-DD>-<TICKET>-<Short-description>/` in the Obsidian vault: the
-  plan in `Plans/`, the run note and screenshots together in `Results/`. Each
-  file is named for the procedure step it shows (`step1-…`). If the notes sit
-  outside the sandbox, reading them needs it disabled.
+  task description or the test-plan comment. When `browser-verify` drafted the
+  plan, it is the approved copy in the run's `Plans/` folder. Copy the wording
+  exactly; never paraphrase it.
+- **The execution note and evidence**: the run's
+  `Tests/<YYYY-MM-DD>-<TICKET>-<Short-description>/Results/` folder in the
+  Obsidian vault, holding the run note and the screenshots together. Each file
+  is named for the procedure step it shows (`step1-…`). Older runs may instead
+  sit in a dated `<YYYY-MM-DD ticket title>/` folder with an `evidence/`
+  subfolder. If the vault sits outside the sandbox, reading it needs it
+  disabled.
 - Look at each artefact before writing about it. A filename is not evidence of
   what an image contains.
 
